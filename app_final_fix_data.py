@@ -10,6 +10,31 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import accuracy_score
 from snownlp import SnowNLP
 
+
+import requests
+
+# ======================
+# 核心适配：解决海外访问问题
+# ======================
+# 1. 设置超时时间（延长到20秒，适配海外延迟）
+ak.set_option("timeout", 20)
+
+# 2. 配置请求头（模拟浏览器，避免被风控拦截）
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Referer": "https://www.eastmoney.com/",
+    "Accept-Language": "zh-CN,zh;q=0.9"
+}
+ak.session = requests.Session()
+ak.session.headers.update(headers)
+
+# 3. 精简数据量（避免内存超限）
+def get_mini_data(code):
+    # 只拉最近30天数据，减少内存占用
+    df = ak.stock_zh_a_hist(symbol=code, period="daily", adjust="qfq").tail(30)
+    return df
+
+
 # ======================
 # 页面配置（美化）
 # ======================
